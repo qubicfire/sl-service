@@ -2,6 +2,8 @@ package handlers
 
 import "net/http"
 
-func DashboardHandler(w http.ResponseWriter, r *http.Request) {
+func DashboardHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
+	}
 }
