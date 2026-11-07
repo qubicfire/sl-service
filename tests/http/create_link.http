@@ -1,0 +1,7 @@
+POST http://127.0.0.1:8080/api/link/create
+Authorization: Bearer LOGIN_KEY
+Content-Type: application/json
+
+{
+    "url": "https://youtube.com"
+}
