@@ -6,7 +6,7 @@ import (
 	"github.com/qubicfire/sl-service/internal/repository"
 )
 
-func TestAddUser(t *testing.T) {
+func TestAddUserMemory(t *testing.T) {
 	r := repository.NewMemoryRepository()
 
 	_, err := r.CreateUser("Alexandro", "just_developer@yandex.ru", "fuck_arch_linux")

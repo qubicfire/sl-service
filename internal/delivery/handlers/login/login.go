@@ -2,9 +2,10 @@ package login
 
 import (
 	"encoding/json"
-	"fmt"
+	"log/slog"
 	"net/http"
 
+	"github.com/qubicfire/sl-service/internal/config"
 	"github.com/qubicfire/sl-service/internal/repository"
 )
 
@@ -13,9 +14,24 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
+
+func SendError(w http.ResponseWriter, message string, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Message: message,
+	})
+}
+
 func LoginHandler(repo repository.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var loginRequest LoginRequest
+
+		slog.Info("Got login request")
 
 		if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -24,29 +40,24 @@ func LoginHandler(repo repository.Repository) http.HandlerFunc {
 
 		user, err := repo.GetUserByEmail(loginRequest.Email)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			SendError(w, "Invalid email or password", http.StatusUnauthorized)
 			return
 		}
 
-		fmt.Fprintln(w, user.ID, user.Name, user.Email, user.Password, user.CreatedAt)
+		if user.Password != loginRequest.Password {
+			SendError(w, "Invalid password", http.StatusUnauthorized)
+			return
+		}
 
-		//login_system.validate_user(login, passowrd)
-		// И вот уже внути login_system будет использоваться репозиторий,
-		// который является интерфейсом для данных о пользоветеле
-		// Данный репозиторий может быть любым (InMemory, SQL, Mongo, etc)
-		// Главное чтобы они все следовали интерфейсу
-		// Первым делом определяешь что тебе нужно от интерфейся (общие функции, что хочешь получить)
-		// После создаешь сам интерфейс
-		// Дальше пишешь реализацию
-		// И почти всегда это касается систем, например.
-		// На это построен, например TDD.
-		// Также можешь на хабре чекнуть что такое DDD
+		token, err := config.GenerateToken(user.ID)
+		if err != nil {
+			SendError(w, "Failed to process login", http.StatusInternalServerError)
+			return
+		}
 
-		// А откуда в данном случае мне получать условный login_system?
-		// Разве я могу в wi
-
-		// В таком случае возникает вопрос, где будет храниться и доставаться
-		// условное хранилище? параметр? хде.Создаем в main, передаем в хенделры через аргументы функции
-		// Нротт ттут надо подумать. я ЕЮАЛ ГОШКУ. ТРУ
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"token": token,
+		})
 	}
 }

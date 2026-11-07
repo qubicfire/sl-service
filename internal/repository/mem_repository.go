@@ -17,6 +17,11 @@ func NewMemoryRepository() *MemoryRepository {
 	}
 }
 
+func (r *MemoryRepository) Close() error {
+	clear(r.emails)
+	return nil
+}
+
 func (r *MemoryRepository) CreateUser(name string, email string, password string) (*domain.User, error) {
 	if _, ok := r.emails[email]; ok {
 		return nil, fmt.Errorf("Failed to create user, because he already exist")
@@ -40,4 +45,12 @@ func (r *MemoryRepository) GetUserByEmail(email string) (*domain.User, error) {
 	}
 
 	return user, nil
+}
+
+func (r *MemoryRepository) CreateLink(userID int64, url string, shortUrl string) (*domain.Link, error) {
+	return nil, nil
+}
+
+func (r *MemoryRepository) DeleteLinkByID(userID int64, shortUrl string) error {
+	return nil
 }

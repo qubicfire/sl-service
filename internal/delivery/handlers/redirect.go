@@ -1,7 +1,10 @@
 package handlers
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 func RedirectHandler(w http.ResponseWriter, r *http.Request) {
-
+	fmt.Fprint(w, "hello")
 }
